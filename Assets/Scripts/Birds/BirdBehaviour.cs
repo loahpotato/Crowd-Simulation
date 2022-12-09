@@ -45,14 +45,14 @@ public class BirdBehaviour : MonoBehaviour
             float distance = (bird.transform.position - currentPosition).magnitude;
             if (distance < FlockManager.Instance.neighborDistance)
             {
-                var scaler = DistanceScaler(distance, FlockManager.Instance.neighborDistance);
-                seperation += (currentPosition - bird.transform.position) / distance * scaler;
+                var sepatateScaler = DistanceScaler(distance, FlockManager.Instance.neighborDistance);
+                seperation += (currentPosition - bird.transform.position) / distance * sepatateScaler;
             }
 
             if(distance < detectRange)
             {
-                var scaler = DistanceScaler(distance, detectRange);
-                alignment += bird.transform.forward * (1 - scaler);
+                var alignScaler = DistanceScaler(distance, detectRange);
+                alignment += bird.transform.forward * (1 - alignScaler);
                 cohesion += bird.transform.position;
             }
 
