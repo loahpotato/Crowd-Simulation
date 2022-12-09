@@ -6,6 +6,8 @@ public class FlockManager : Singleton<FlockManager>
 {
     public GameObject birdPrefab;
     public int initalNumber = 10;
+    public float neighborDistance = 0.3f;
+    public float detectDistance = 4.0f;
 
     [Range(0.1f, 5.0f)]
     public float velocity = 1.0f;
