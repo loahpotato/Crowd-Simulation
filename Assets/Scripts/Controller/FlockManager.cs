@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,19 +6,19 @@ using UnityEngine;
 public class FlockManager : Singleton<FlockManager>
 {
     public GameObject birdPrefab;
-    public int initalNumber = 10;
-    public float neighborDistance = 0.3f;
-    public float detectDistance = 4.0f;
+    public int initalNumber = 100;
+    public float neighborDistance = 0.1f;
+    public float detectDistance = 0.5f;
 
-    [Range(0.1f, 5.0f)]
-    public float velocity = 1.0f;
+    [Range(0.1f, 1.0f)]
+    public float rotationSpeed = 1.0f;
+    [Range(0.1f, 2.0f)]
+    public float velocity = 0.4f;
     [Range(0.0f, 0.5f)]
-    public float velocityVariation = 0.2f;
+    public float velocityVariation = 0.1f;
 
     public GameObject plane;
-    [SerializeField] private Vector3 area = new Vector3(5, 5, 5);
-    [SerializeField] private Vector3 initPosition = new Vector3(0, 0, 0);
-    [SerializeField] private float spawnRadius = 0.2f;
+    public Vector3 area = new Vector3(1, 1, 1);
 
     [HideInInspector]
     public List<GameObject> allBirds;
@@ -28,10 +29,7 @@ public class FlockManager : Singleton<FlockManager>
         for(int i = 0; i < initalNumber; i++)
         {
             Vector3 newPosition = SetNewPosition();
-            while (newPosition.z <= plane.transform.position.z)
-            {
-                newPosition = SetNewPosition();
-            }
+            //plane.transform.position = new Vector3(0, - area.y * 2, 0);
 
             AddBird(newPosition);
         }
@@ -39,16 +37,18 @@ public class FlockManager : Singleton<FlockManager>
 
     private Vector3 SetNewPosition()
     {
-        return initPosition + Random.insideUnitSphere * spawnRadius;
+        Vector3 initPosition = Vector3.zero;
+        float max = Mathf.Min(area.x, area.y);
+        max = Mathf.Min(area.z, max);
+        return initPosition + UnityEngine.Random.insideUnitSphere * max;
     }
 
     public GameObject AddBird(Vector3 position)
     {
-        //var rotation = Quaternion.Slerp(transform.rotation, Random.rotation, 0.3f);
+        //Quaternion rotation = Quaternion.Slerp(transform.rotation, UnityEngine.Random.rotation, 0.3f);
+        Quaternion rotation = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 360), Vector3.up);
         //var boid = Instantiate(boidPrefab, position, rotation) as GameObject;
-        GameObject newBird = Instantiate(birdPrefab);
-        newBird.transform.position = position;
-        //boid.GetComponent<BoidBehaviour>().controller = this;
+        GameObject newBird = Instantiate(birdPrefab, position, rotation);
 
         allBirds.Add(newBird);
         return newBird;

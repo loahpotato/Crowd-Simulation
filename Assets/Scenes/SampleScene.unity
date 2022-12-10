@@ -168,13 +168,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   birdPrefab: {fileID: 100000, guid: 3b7da820482deb84ab2298eeeb91e2e0, type: 3}
-  initalNumber: 10
-  velocity: 1
-  velocityVariation: 0.2
+  initalNumber: 100
+  neighborDistance: 0.1
+  detectDistance: 0.5
+  rotationSpeed: 1
+  velocity: 0.4
+  velocityVariation: 0.1
   plane: {fileID: 922771585}
-  area: {x: 5, y: 5, z: 5}
-  initPosition: {x: 0, y: 1, z: 0}
-  spawnRadius: 1
+  area: {x: 1, y: 1, z: 1}
   allBirds: []
 --- !u!1 &705507993
 GameObject:
@@ -323,7 +324,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 23b39f2779f8a6e4190f8feb694cde22, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -361,7 +362,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 922771585}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -5, z: 0}
+  m_LocalPosition: {x: 0, y: -10, z: 0}
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -444,14 +445,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalRotation: {x: 0.6771695, y: 0.20357151, z: 0.20357154, w: 0.6771697}
+  m_LocalPosition: {x: -2.07, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 56.536, y: 90, z: 90}
 --- !u!1001 &1127601159
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -463,6 +464,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Agent
       objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 3b7da820482deb84ab2298eeeb91e2e0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 3b7da820482deb84ab2298eeeb91e2e0, type: 3}
       propertyPath: m_RootOrder
       value: 3
@@ -473,7 +478,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 3b7da820482deb84ab2298eeeb91e2e0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 3b7da820482deb84ab2298eeeb91e2e0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -526,3 +531,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0ee4b3feece4a645bdcc6c050fc830c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  velocityWeight: 0.1
