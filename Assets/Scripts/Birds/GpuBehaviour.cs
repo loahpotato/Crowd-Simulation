@@ -1,32 +1,52 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
-public class BirdBehaviour : MonoBehaviour
+public class GpuBehaviour : MonoBehaviour
 {
+    [SerializeField]
+    ComputeShader computeShader;
+
     [Range(0.0f, 1.0f)]
     public float velocityWeight = 0.1f;
 
     private float velocity;
-//    private Vector3 direction;
+    //private Vector3 direction;
     private float detectDistance;
     private float neighborDistance;
 
+    ComputeBuffer birdBuffer;
     // Random seed.
     float noiseOffset;
 
+    static readonly int
+        birdId = Shader.PropertyToID("_Bird"),
+        detectId = Shader.PropertyToID("_Detect"),
+        neighborId = Shader.PropertyToID("_Neighbor");
+
+    void OnEnable()
+    {
+        birdBuffer = new ComputeBuffer(FlockManager.Instance.initalNumber, 3 * 4);
+    }
+
+    void OnDisable()
+    {
+        birdBuffer.Release();
+        birdBuffer = null;
+    }
+
     void Start()
     {
-        noiseOffset = Random.value * 10.0f;
+        noiseOffset = UnityEngine.Random.value * 10.0f;
         velocity = FlockManager.Instance.velocity;
         detectDistance = FlockManager.Instance.detectDistance;
         neighborDistance = FlockManager.Instance.neighborDistance;
     }
 
-    // Update is called once per frame
     void Update()
     {
         Vector3 currentPosition = transform.position;
@@ -36,17 +56,33 @@ public class BirdBehaviour : MonoBehaviour
         float dRange = detectDistance + velocityWeight * v;
         float nDistance = neighborDistance + velocityWeight * v;
 
-        var direction = Movement(currentPosition, dRange, nDistance) + FlyAround(currentPosition, dRange, 0.2f, nDistance);
+        var direction = UpdateOnGpu(dRange, nDistance);
 
-        if(direction.sqrMagnitude > 0.00000001f)
+        if (direction.sqrMagnitude > 0.00000001f)
         {
             var rotation = Quaternion.LookRotation(direction);
             transform.rotation = Quaternion.Slerp(transform.rotation,
                                                   rotation,
                                                   FlockManager.Instance.rotationSpeed * Time.deltaTime);
         }
-        transform.position = currentPosition + transform.forward * (v * Time.deltaTime);
+        transform.position = currentPosition + transform.forward * (velocity * Time.deltaTime);
     }
+
+    Vector3 UpdateOnGpu(float detect, float neighbor)
+    {
+        Vector3 rotateDir = Vector3.zero;
+        Vector3 aroundDir = Vector3.zero;
+        computeShader.SetFloat(detectId, detect);
+        computeShader.SetFloat(neighborId, neighbor);
+
+        int m = computeShader.FindKernel("Movement");
+        computeShader.SetBuffer(m, birdId, birdBuffer);
+
+        var groups = Mathf.CeilToInt(FlockManager.Instance.initalNumber / 128.0f);
+        computeShader.Dispatch(m, groups, 1, 1);
+        return rotateDir + aroundDir;
+    }
+
 
     private Vector3 Movement(Vector3 currentPosition, float detectRange, float neighborDistance)
     {
@@ -54,7 +90,7 @@ public class BirdBehaviour : MonoBehaviour
         Vector3 alignment = Vector3.zero;
         Vector3 cohesion = Vector3.zero;
         int groupSize = 0;
-        
+
         foreach (GameObject bird in FlockManager.Instance.allBirds)
         {
             if (bird.gameObject == gameObject) continue;

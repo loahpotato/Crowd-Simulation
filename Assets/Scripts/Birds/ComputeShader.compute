@@ -1,0 +1,12 @@
+#pragma kernel Movement
+
+RWStructuredBuffer<float3> _Bird;
+
+float _Detect, _Neighbor;
+
+[numthreads(128,1,1)]
+void Movement(uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+
+}
