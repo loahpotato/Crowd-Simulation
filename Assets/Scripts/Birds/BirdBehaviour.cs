@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -50,7 +49,7 @@ public class BirdBehaviour : MonoBehaviour
 
     private Vector3 Movement(Vector3 currentPosition, float detectRange, float neighborDistance)
     {
-        Vector3 seperation = Vector3.zero;
+        Vector3 separation = Vector3.zero;
         Vector3 alignment = Vector3.zero;
         Vector3 cohesion = Vector3.zero;
         int groupSize = 0;
@@ -65,7 +64,7 @@ public class BirdBehaviour : MonoBehaviour
                 if (distance < neighborDistance)
                 {
                     var separateScaler = DistanceScaler(distance, neighborDistance);
-                    seperation += (currentPosition - bird.transform.position) / distance * separateScaler;
+                    separation += (currentPosition - bird.transform.position) / distance * separateScaler;
                 }
 
                 var alignScaler = DistanceScaler(distance, detectRange);
@@ -76,7 +75,7 @@ public class BirdBehaviour : MonoBehaviour
 
         }
         cohesion = cohesion / groupSize - currentPosition;
-        return seperation + alignment + cohesion;
+        return separation + alignment + cohesion;
     }
 
     private float DistanceScaler(float distance, float range)

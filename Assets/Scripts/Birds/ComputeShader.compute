@@ -1,12 +1,102 @@
 #pragma kernel Movement
 
-RWStructuredBuffer<float3> _Bird;
+struct Bird
+{
+    float3 position;
+    float3 forward;
+    float3 dir;
+};
 
-float _Detect, _Neighbor;
+RWStructuredBuffer<Bird> _Bird;
+
+float _Detect, _Neighbor, _DeltaTime, _Velocity, _RotationSpeed;
+uint _Number;
+
+float DistanceScaler(float distance, float range)
+{
+    float ratio = distance / range;
+    return clamp((1.0f - ratio), 0, 1);
+}
+
+float3 FlyAroundDirection(float currentPos, float max, float detectRange, float toEdgeDistance, float d, float3 axis)
+{
+    float3 dir = float3(0, 0, 0);
+    float absPos = abs(currentPos);
+    if (absPos + detectRange >= max)
+    {
+        if (absPos < max)
+        {
+            float distance = max - absPos;
+            if (distance < toEdgeDistance)
+                dir -= axis * DistanceScaler(distance, toEdgeDistance) * currentPos * d;
+        }
+        else
+            dir -= axis * currentPos * absPos * d;
+    }
+    return dir;
+}
+
+
+float3 FlyAround(float3 currentPosition, float detectRange, float toEdgeDistance, float n)
+{
+    float3 area = float3(6, 6, 6);
+    float3 avoid = float3(0, 0, 0);
+
+    float maxX = area.x / 2;
+    float maxY = area.y / 2;
+    float maxZ = area.z / 2;
+
+    float density = detectRange / n;
+
+    avoid += FlyAroundDirection(currentPosition.x, maxX, detectRange, toEdgeDistance, density, float3(1, 0, 0));
+    avoid += FlyAroundDirection(currentPosition.y, maxY, detectRange, toEdgeDistance, density, float3(0, 1, 0));
+    avoid += FlyAroundDirection(currentPosition.z, maxZ, detectRange, toEdgeDistance, density, float3(0, 0, 1));
+
+    return avoid;
+}
+
 
 [numthreads(128,1,1)]
 void Movement(uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
+    uint birdId = id.x;
+    Bird current = _Bird[birdId];
 
+    float3 alignment = float3(0, 0, 0);
+    float3 separation = float3(0, 0, 0);
+    float3 cohesion = float3(0, 0, 0);
+    uint groupSize = 0;
+
+    for (uint i = 0; i < _Number; i++) {
+        if (birdId == i) continue;
+
+        Bird bird = _Bird[i];
+
+        float distance = length(bird.position - current.position);
+        if (distance < _Detect) {
+            if (distance < _Neighbor)
+            {
+                float separateScaler = DistanceScaler(distance, _Neighbor);
+                separation = separation + (current.position - bird.position) / distance * separateScaler;
+            }
+
+            float alignScaler = DistanceScaler(distance, _Detect);
+            alignment = alignment + bird.forward * (1 - alignScaler);
+            cohesion = cohesion + bird.position;
+            groupSize++;
+        }
+    }
+    cohesion = cohesion / groupSize - current.position;
+    
+    float3 around = FlyAround(current.position, _Detect, 0.2, _Neighbor);
+    float3 direction = separation + alignment + cohesion + around;
+    
+    if (length(direction) > 0)
+    {
+        current.dir = lerp(current.forward, direction, _RotationSpeed * _DeltaTime);
+        current.forward = normalize(current.dir);
+    }
+    current.position = current.position + current.forward * _Velocity * _DeltaTime;
+    
+    _Bird[birdId] = current;
 }
