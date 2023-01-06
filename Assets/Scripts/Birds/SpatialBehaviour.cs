@@ -58,13 +58,12 @@ public class SpatialBehaviour : MonoBehaviour
                                                  Quaternion.LookRotation(dir),
                                                  SpatialManager.Instance.rotationSpeed * Time.deltaTime);
         }
-
         else
         {
             float dRange = detectDistance + velocityWeight * v;
             float nDistance = neighborDistance + velocityWeight * v;
 
-            var direction = Movement(currentPosition, dRange, nDistance) + FlyAround(currentPosition, dRange, 0.2f, nDistance);
+            var direction = Movement(currentPosition, dRange, nDistance); //+ FlyAround(currentPosition, dRange, 0.5f, nDistance);
 
             if (direction.sqrMagnitude > 0.00000001f)
             {
@@ -82,7 +81,6 @@ public class SpatialBehaviour : MonoBehaviour
         {
             SpatialManager.Instance.boxes[boxID].Remove(gameObject);
 
-            // add boid to its new voxel
             if (SpatialManager.Instance.boxes.ContainsKey(newBoxID))
             {
                 SpatialManager.Instance.boxes[newBoxID].Add(gameObject);
@@ -102,14 +100,9 @@ public class SpatialBehaviour : MonoBehaviour
         Vector3 cohesion = Vector3.zero;
         int groupSize = 0;
 
-        List<GameObject> allBirds = SpatialManager.Instance.boxes[boxID];
-        allBirds.AddRange(SpatialManager.Instance.boxes[boxID + Vector3.forward]);
-        allBirds.AddRange(SpatialManager.Instance.boxes[boxID + Vector3.back]);
-        allBirds.AddRange(SpatialManager.Instance.boxes[boxID + Vector3.right]);
-        allBirds.AddRange(SpatialManager.Instance.boxes[boxID + Vector3.left]);
-        allBirds.AddRange(SpatialManager.Instance.boxes[boxID + Vector3.up]);
-        allBirds.AddRange(SpatialManager.Instance.boxes[boxID + Vector3.down]);
-        foreach (GameObject bird in allBirds)
+        List<GameObject> boxBirds = SpatialManager.Instance.boxes[boxID];
+
+        foreach (GameObject bird in boxBirds)
         {
             if (bird.gameObject == gameObject) continue;
 

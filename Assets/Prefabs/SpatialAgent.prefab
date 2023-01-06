@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7633428156372263987}
   - component: {fileID: 7633428156373395187}
   - component: {fileID: 7633428156387885299}
-  - component: {fileID: 220964137337619224}
+  - component: {fileID: -8282428006601451891}
   m_Layer: 8
   m_Name: SpatialAgent
   m_TagString: Untagged
@@ -98,7 +98,7 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.01
   m_Center: {x: -6.776212e-21, y: 0.000015771016, z: 0.000015735626}
---- !u!114 &220964137337619224
+--- !u!114 &-8282428006601451891
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -107,7 +107,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7633428156375595059}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0ee4b3feece4a645bdcc6c050fc830c, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c09ef2205610454a9a3eab800e0d089, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   velocityWeight: 0.1

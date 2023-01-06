@@ -79,8 +79,9 @@ public class BirdBehaviour : MonoBehaviour
         Vector3 alignment = Vector3.zero;
         Vector3 cohesion = Vector3.zero;
         int groupSize = 0;
-        
-        foreach (GameObject bird in FlockManager.Instance.allBirds)
+
+        var nearbyBirds = Physics.OverlapSphere(currentPosition, detectRange, FlockManager.Instance.searchLayer);
+        foreach (var bird in nearbyBirds)//FlockManager.Instance.allBirds)
         {
             if (bird.gameObject == gameObject) continue;
 

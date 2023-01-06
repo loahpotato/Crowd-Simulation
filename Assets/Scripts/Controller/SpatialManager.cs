@@ -25,7 +25,7 @@ public class SpatialManager : Singleton<SpatialManager>
     [HideInInspector]
     public Vector3 center = Vector3.zero;
     [HideInInspector]
-    public float boxSize = 0.2f;
+    public float boxSize = 1f;
     [HideInInspector]
     public List<GameObject> allBirds;
     [HideInInspector]

@@ -168,14 +168,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   birdPrefab: {fileID: 100000, guid: 3b7da820482deb84ab2298eeeb91e2e0, type: 3}
-  initalNumber: 100
+  initalNumber: 5000
   neighborDistance: 0.1
   detectDistance: 0.5
   rotationSpeed: 1
   velocity: 0.4
   velocityVariation: 0.1
-  plane: {fileID: 922771585}
-  area: {x: 2, y: 2, z: 2}
+  area: {x: 6, y: 6, z: 6}
+  searchLayer:
+    serializedVersion: 2
+    m_Bits: 64
   allBirds: []
   center: {x: 0, y: 0, z: 0}
 --- !u!1 &580657385
@@ -208,13 +210,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   birdPrefab: {fileID: 7633428156375595059, guid: 8db3792e2902ec14aa0fb8b50ea86f49, type: 3}
-  initalNumber: 15000
+  initalNumber: 5000
   neighborDistance: 0.1
   detectDistance: 0.5
   rotationSpeed: 1
-  velocity: 0.4
+  velocity: 0.35
   velocityVariation: 0.1
-  area: {x: 10, y: 10, z: 10}
+  area: {x: 6, y: 6, z: 6}
   center: {x: 0, y: 0, z: 0}
   boxSize: 0.2
   allBirds: []

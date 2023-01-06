@@ -18,11 +18,12 @@ public class FlockManager : Singleton<FlockManager>
     [Range(0.0f, 0.5f)]
     public float velocityVariation = 0.1f;
 
-    public GameObject plane;
     public Vector3 area = new Vector3(2, 2, 2);
 
+    public LayerMask searchLayer;
     [HideInInspector]
     public List<GameObject> allBirds;
+    [HideInInspector]
     public Vector3 center = Vector3.zero;
 
     void Start()
