@@ -39,7 +39,7 @@ float3 FlyAroundDirection(float currentPos, float max, float detectRange, float 
 
 float3 FlyAround(float3 currentPosition, float detectRange, float toEdgeDistance, float n)
 {
-    float3 area = float3(6, 6, 6);
+    float3 area = float3(10, 10, 10);
     float3 avoid = float3(0, 0, 0);
 
     float maxX = area.x / 2;

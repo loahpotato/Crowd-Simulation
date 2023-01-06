@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public class FlockManager : Singleton<FlockManager>
+public class SpatialManager : Singleton<SpatialManager>
 {
     public GameObject birdPrefab;
     public int initalNumber = 100;
@@ -18,17 +20,22 @@ public class FlockManager : Singleton<FlockManager>
     [Range(0.0f, 0.5f)]
     public float velocityVariation = 0.1f;
 
-    public GameObject plane;
     public Vector3 area = new Vector3(2, 2, 2);
 
     [HideInInspector]
-    public List<GameObject> allBirds;
     public Vector3 center = Vector3.zero;
+    [HideInInspector]
+    public float boxSize = 0.2f;
+    [HideInInspector]
+    public List<GameObject> allBirds;
+    [HideInInspector]
+    public Dictionary<Vector3, List<GameObject>> boxes;
 
     void Start()
     {
+        boxes = new Dictionary<Vector3, List<GameObject>>();
         allBirds = new List<GameObject>();
-        for(int i = 0; i < initalNumber; i++)
+        for (int i = 0; i < initalNumber; i++)
         {
             Vector3 newPosition = SetNewPosition();
             //plane.transform.position = new Vector3(0, - area.y * 2, 0);
@@ -51,8 +58,22 @@ public class FlockManager : Singleton<FlockManager>
         Quaternion rotation = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 360), Vector3.up);
         //var boid = Instantiate(boidPrefab, position, rotation) as GameObject;
         GameObject newBird = Instantiate(birdPrefab, position, rotation);
-
         allBirds.Add(newBird);
+
+        Vector3 boxID = new Vector3(
+                                      Mathf.Floor(position.x / boxSize),
+                                      Mathf.Floor(position.y / boxSize),
+                                      Mathf.Floor(position.z / boxSize)
+                                      );
+
+        if (boxes.ContainsKey(boxID))
+        {
+            boxes[boxID].Add(newBird);
+        }
+        else
+        {
+            boxes[boxID] = new List<GameObject> { newBird };
+        }
         return newBird;
     }
 }
