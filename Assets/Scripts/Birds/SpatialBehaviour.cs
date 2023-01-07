@@ -24,8 +24,10 @@ public class SpatialBehaviour : MonoBehaviour
     float noiseOffset;
     bool outBounds = false;
 
+    private Renderer rend;
     void Start()
     {
+        rend = GetComponent<Renderer>();
         noiseOffset = UnityEngine.Random.value * 10.0f;
         velocity = SpatialManager.Instance.velocity;
         detectDistance = SpatialManager.Instance.detectDistance;
@@ -42,7 +44,7 @@ public class SpatialBehaviour : MonoBehaviour
         var noise = Mathf.PerlinNoise(Time.time, noiseOffset);
         var v = velocity * (1.0f + noise * SpatialManager.Instance.velocityVariation);
 
-        boxID = getBoxID(currentPosition);
+        boxID = SpatialManager.Instance.getBoxPosition(currentPosition);
 
         if (!b.Contains(currentPosition))
         {
@@ -65,7 +67,7 @@ public class SpatialBehaviour : MonoBehaviour
             float dRange = detectDistance + velocityWeight * v;
             float nDistance = neighborDistance + velocityWeight * v;
 
-            var direction = Movement(currentPosition, dRange, nDistance); //+ FlyAround(currentPosition, dRange, 0.5f, nDistance);
+            var direction = Movement(currentPosition, nDistance); //+ FlyAround(currentPosition, dRange, 0.5f, nDistance);
 
             if (direction.sqrMagnitude > 0.00000001f)
             {
@@ -78,20 +80,10 @@ public class SpatialBehaviour : MonoBehaviour
         }
         transform.position = currentPosition + transform.forward * (v * Time.deltaTime);
 
-        Vector3 newBoxID = getBoxID(transform.position);
+        Vector3 newBoxID = SpatialManager.Instance.getBoxPosition(transform.position);
         if (!newBoxID.Equals(boxID))
         {
             SpatialManager.Instance.boxes[boxID].Remove(gameObject);
-            /*
-            if (SpatialManager.Instance.boxes.ContainsKey(newBoxID))
-            {
-                SpatialManager.Instance.boxes[newBoxID].Add(gameObject);
-            }
-            else
-            {
-                SpatialManager.Instance.boxes[newBoxID] = new List<GameObject> { gameObject };
-            }
-            */
             if (!SpatialManager.Instance.boxes.TryGetValue(newBoxID, out HashSet<GameObject> bucket))
             {
                 bucket = new HashSet<GameObject>();
@@ -106,16 +98,15 @@ public class SpatialBehaviour : MonoBehaviour
     //
     //      The basic movement rule of boids.
     //
-    private Vector3 Movement(Vector3 currentPosition, float detectRange, float neighborDistance)
+    private Vector3 Movement(Vector3 currentPosition, float neighborDistance)
     {
         Vector3 separation = Vector3.zero;
         Vector3 alignment = Vector3.zero;
         Vector3 cohesion = Vector3.zero;
         int groupSize = 0;
 
-        //List<GameObject> boxBirds = findNearby(boxID);
         HashSet<GameObject> boxBirds = findNearby(boxID);
-
+        Color c = new Color();
         foreach (GameObject bird in boxBirds)
         {
             if (groupSize > SpatialManager.Instance.maxQueryNumber) break;
@@ -123,7 +114,7 @@ public class SpatialBehaviour : MonoBehaviour
 
             var towards = bird.transform.position - currentPosition;
             float distance = towards.magnitude;
-            if (distance < detectRange && Vector3.Dot(transform.forward, towards) >= 0) // if the neighbor can be detected
+            if (Vector3.Dot(transform.forward, towards) >= 0) // if the neighbor can be detected
             {
                 if (distance < neighborDistance)
                 {
@@ -131,13 +122,19 @@ public class SpatialBehaviour : MonoBehaviour
                     separation += (currentPosition - bird.transform.position) / distance * separateScaler;
                 }
 
-                var alignScaler = DistanceScaler(distance, detectRange);
+                var alignScaler = DistanceScaler(distance, SpatialManager.Instance.boxSize * 0.707f);
                 alignment += bird.transform.forward * (1 - alignScaler);
                 cohesion += bird.transform.position;
                 groupSize++;
+                c += bird.GetComponent<Renderer>().material.color;
             }
 
         }
+        if(groupSize != 0)
+        {
+            rend.material.color = c / (float)groupSize;
+        }
+
         cohesion = cohesion / groupSize - currentPosition;
         return separation + alignment + cohesion;
     }
@@ -148,34 +145,16 @@ public class SpatialBehaviour : MonoBehaviour
         return Mathf.Clamp01(1.0f - ratio);
     }
 
-
-    //
-    //      Get the ID of current box (Uniform Spatial Subdivision)
-    //
-    private Vector3 getBoxID(Vector3 position)
+    private HashSet<GameObject> findNearby(Vector3 boxP)
     {
-        Vector3 boxID = new Vector3(Mathf.Floor(position.x / SpatialManager.Instance.boxSize),
-                                    Mathf.Floor(position.y / SpatialManager.Instance.boxSize),
-                                    Mathf.Floor(position.z / SpatialManager.Instance.boxSize));
-        return boxID;
-    }
-
-    private HashSet<GameObject> findNearby(Vector3 boxID)
-    {
-        //List<GameObject> nearBy = new List<GameObject>();
-        List<Vector3> nearbyIDs = Enumerable.Range(-1, 3)
+        List<Vector3> nearbyPs = Enumerable.Range(-1, 3)
                                   .SelectMany(x => Enumerable.Range(-1, 3)
                                   .SelectMany(y => Enumerable.Range(-1, 3)
-                                  .Select(z => boxID + new Vector3(x, y, z)))).ToList();
+                                  .Select(z => boxP + new Vector3(x, y, z)))).ToList();
 
         HashSet<GameObject> nearBy = new HashSet<GameObject>();
-        foreach (Vector3 id in nearbyIDs){
-            /*if (SpatialManager.Instance.boxes.ContainsKey(id))
-            {
-                nearBy.AddRange(SpatialManager.Instance.boxes[id]);
-            }*/
-            
-            if (SpatialManager.Instance.boxes.TryGetValue(id, out HashSet<GameObject> bucket))
+        foreach (Vector3 p in nearbyPs){
+            if (SpatialManager.Instance.boxes.TryGetValue(p, out HashSet<GameObject> bucket))
             {
                 nearBy.UnionWith(bucket);
             }

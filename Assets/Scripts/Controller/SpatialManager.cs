@@ -26,7 +26,7 @@ public class SpatialManager : Singleton<SpatialManager>
     [HideInInspector]
     public Vector3 center = Vector3.zero;
     [HideInInspector]
-    public float boxSize = 0.5f;
+    public float boxSize;
     [HideInInspector]
     public List<GameObject> allBirds;
     [HideInInspector]
@@ -34,7 +34,8 @@ public class SpatialManager : Singleton<SpatialManager>
 
     void Start()
     {
-        boxes = new Dictionary<Vector3, HashSet<GameObject>>();
+        boxSize = detectDistance;
+        boxes = new Dictionary<Vector3, HashSet<GameObject>>((int)(area.x/boxSize *area.y/boxSize*area.z/boxSize));
         allBirds = new List<GameObject>();
         for (int i = 0; i < initalNumber; i++)
         {
@@ -59,13 +60,10 @@ public class SpatialManager : Singleton<SpatialManager>
         Quaternion rotation = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 360), Vector3.up);
         //var boid = Instantiate(boidPrefab, position, rotation) as GameObject;
         GameObject newBird = Instantiate(birdPrefab, position, rotation);
+        newBird.GetComponent<Renderer>().material.color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
         allBirds.Add(newBird);
 
-        Vector3 boxID = new Vector3(
-                                      Mathf.Floor(position.x / boxSize),
-                                      Mathf.Floor(position.y / boxSize),
-                                      Mathf.Floor(position.z / boxSize)
-                                      );
+        Vector3 boxID = getBoxPosition(position);
 
         /*if (boxes.ContainsKey(boxID))
         {
@@ -75,12 +73,24 @@ public class SpatialManager : Singleton<SpatialManager>
         {
             boxes[boxID] = new List<GameObject> { newBird };
         }*/
-        if (!boxes.TryGetValue(boxID, out HashSet<GameObject> birds))
+        if (!boxes.TryGetValue(boxID, out HashSet<GameObject> bucket))
         {
-            birds = new HashSet<GameObject>();
-            boxes[boxID] = birds;
+            bucket = new HashSet<GameObject>();
+            boxes[boxID] = bucket;
         }
-        birds.Add(newBird);
+        bucket.Add(newBird);
         return newBird;
     }
+
+    //
+    //      Get the position of current box (Uniform Spatial Subdivision)
+    //
+    public Vector3 getBoxPosition(Vector3 position)
+    {
+        Vector3 p = new Vector3(Mathf.Floor(position.x / SpatialManager.Instance.boxSize),
+                                    Mathf.Floor(position.y / SpatialManager.Instance.boxSize),
+                                    Mathf.Floor(position.z / SpatialManager.Instance.boxSize));
+        return p;
+    }
+
 }
