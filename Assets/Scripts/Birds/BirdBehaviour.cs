@@ -80,8 +80,10 @@ public class BirdBehaviour : MonoBehaviour
         Vector3 cohesion = Vector3.zero;
         int groupSize = 0;
 
-        var nearbyBirds = Physics.OverlapSphere(currentPosition, detectRange, FlockManager.Instance.searchLayer);
-        foreach (var bird in nearbyBirds)//FlockManager.Instance.allBirds)
+        //var nearbyBirds = Physics.OverlapSphere(currentPosition, detectRange, FlockManager.Instance.searchLayer); 
+        // same way but more convenient implementation than Uniform Spatial Subdivision??
+
+        foreach (var bird in FlockManager.Instance.allBirds)
         {
             if (bird.gameObject == gameObject) continue;
 
@@ -112,6 +114,11 @@ public class BirdBehaviour : MonoBehaviour
         return Mathf.Clamp01(1.0f - ratio);
     }
 
+
+    //
+    //      If there is no fixed flying area limit (no bounds), 
+    //      this function simulates birds flying around the center.
+    //
     private Vector3 FlyAround(Vector3 currentPosition, float detectRange, float toEdgeDistance, float n)
     {
         Vector3 area = FlockManager.Instance.area;

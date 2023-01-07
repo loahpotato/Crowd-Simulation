@@ -12,6 +12,7 @@ public class SpatialManager : Singleton<SpatialManager>
     public int initalNumber = 100;
     public float neighborDistance = 0.1f;
     public float detectDistance = 0.5f;
+    public int maxQueryNumber = 10;
 
     [Range(0.1f, 1.0f)]
     public float rotationSpeed = 1.0f;
@@ -25,15 +26,15 @@ public class SpatialManager : Singleton<SpatialManager>
     [HideInInspector]
     public Vector3 center = Vector3.zero;
     [HideInInspector]
-    public float boxSize = 1f;
+    public float boxSize = 0.5f;
     [HideInInspector]
     public List<GameObject> allBirds;
     [HideInInspector]
-    public Dictionary<Vector3, List<GameObject>> boxes;
+    public Dictionary<Vector3, HashSet<GameObject>> boxes;
 
     void Start()
     {
-        boxes = new Dictionary<Vector3, List<GameObject>>();
+        boxes = new Dictionary<Vector3, HashSet<GameObject>>();
         allBirds = new List<GameObject>();
         for (int i = 0; i < initalNumber; i++)
         {
@@ -66,14 +67,20 @@ public class SpatialManager : Singleton<SpatialManager>
                                       Mathf.Floor(position.z / boxSize)
                                       );
 
-        if (boxes.ContainsKey(boxID))
+        /*if (boxes.ContainsKey(boxID))
         {
-            boxes[boxID].Add(newBird);
+             boxes[boxID].Add(newBird);
         }
         else
         {
             boxes[boxID] = new List<GameObject> { newBird };
+        }*/
+        if (!boxes.TryGetValue(boxID, out HashSet<GameObject> birds))
+        {
+            birds = new HashSet<GameObject>();
+            boxes[boxID] = birds;
         }
+        birds.Add(newBird);
         return newBird;
     }
 }

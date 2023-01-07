@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   birdPrefab: {fileID: 100000, guid: 3b7da820482deb84ab2298eeeb91e2e0, type: 3}
-  initalNumber: 5000
+  initalNumber: 500
   neighborDistance: 0.1
   detectDistance: 0.5
   rotationSpeed: 1
@@ -210,9 +210,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   birdPrefab: {fileID: 7633428156375595059, guid: 8db3792e2902ec14aa0fb8b50ea86f49, type: 3}
-  initalNumber: 5000
+  initalNumber: 2000
   neighborDistance: 0.1
-  detectDistance: 0.5
+  detectDistance: 0.3
+  maxQueryNumber: 10
   rotationSpeed: 1
   velocity: 0.35
   velocityVariation: 0.1

@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using static GpuFlockManager;
 
 public class SpatialBehaviour : MonoBehaviour
 {
@@ -80,7 +82,7 @@ public class SpatialBehaviour : MonoBehaviour
         if (!newBoxID.Equals(boxID))
         {
             SpatialManager.Instance.boxes[boxID].Remove(gameObject);
-
+            /*
             if (SpatialManager.Instance.boxes.ContainsKey(newBoxID))
             {
                 SpatialManager.Instance.boxes[newBoxID].Add(gameObject);
@@ -89,10 +91,21 @@ public class SpatialBehaviour : MonoBehaviour
             {
                 SpatialManager.Instance.boxes[newBoxID] = new List<GameObject> { gameObject };
             }
+            */
+            if (!SpatialManager.Instance.boxes.TryGetValue(newBoxID, out HashSet<GameObject> bucket))
+            {
+                bucket = new HashSet<GameObject>();
+                SpatialManager.Instance.boxes[newBoxID] = bucket;
+            }
+            bucket.Add(gameObject);
             boxID = newBoxID;
         }
     }
 
+
+    //
+    //      The basic movement rule of boids.
+    //
     private Vector3 Movement(Vector3 currentPosition, float detectRange, float neighborDistance)
     {
         Vector3 separation = Vector3.zero;
@@ -100,10 +113,12 @@ public class SpatialBehaviour : MonoBehaviour
         Vector3 cohesion = Vector3.zero;
         int groupSize = 0;
 
-        List<GameObject> boxBirds = SpatialManager.Instance.boxes[boxID];
+        //List<GameObject> boxBirds = findNearby(boxID);
+        HashSet<GameObject> boxBirds = findNearby(boxID);
 
         foreach (GameObject bird in boxBirds)
         {
+            if (groupSize > SpatialManager.Instance.maxQueryNumber) break;
             if (bird.gameObject == gameObject) continue;
 
             var towards = bird.transform.position - currentPosition;
@@ -133,6 +148,10 @@ public class SpatialBehaviour : MonoBehaviour
         return Mathf.Clamp01(1.0f - ratio);
     }
 
+
+    //
+    //      Get the ID of current box (Uniform Spatial Subdivision)
+    //
     private Vector3 getBoxID(Vector3 position)
     {
         Vector3 boxID = new Vector3(Mathf.Floor(position.x / SpatialManager.Instance.boxSize),
@@ -141,6 +160,34 @@ public class SpatialBehaviour : MonoBehaviour
         return boxID;
     }
 
+    private HashSet<GameObject> findNearby(Vector3 boxID)
+    {
+        //List<GameObject> nearBy = new List<GameObject>();
+        List<Vector3> nearbyIDs = Enumerable.Range(-1, 3)
+                                  .SelectMany(x => Enumerable.Range(-1, 3)
+                                  .SelectMany(y => Enumerable.Range(-1, 3)
+                                  .Select(z => boxID + new Vector3(x, y, z)))).ToList();
+
+        HashSet<GameObject> nearBy = new HashSet<GameObject>();
+        foreach (Vector3 id in nearbyIDs){
+            /*if (SpatialManager.Instance.boxes.ContainsKey(id))
+            {
+                nearBy.AddRange(SpatialManager.Instance.boxes[id]);
+            }*/
+            
+            if (SpatialManager.Instance.boxes.TryGetValue(id, out HashSet<GameObject> bucket))
+            {
+                nearBy.UnionWith(bucket);
+            }
+        }
+        return nearBy;
+
+    }
+
+    //
+    //      If there is no fixed flying area limit (no bounds), 
+    //      this function simulates birds flying around the center.
+    //
     private Vector3 FlyAround(Vector3 currentPosition, float detectRange, float toEdgeDistance, float n)
     {
         Vector3 area = SpatialManager.Instance.area;
