@@ -7,7 +7,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
-using static GpuFlockManager;
 
 public class SpatialBehaviour : MonoBehaviour
 {
