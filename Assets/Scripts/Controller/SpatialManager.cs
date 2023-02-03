@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -28,6 +29,8 @@ public class SpatialManager : Singleton<SpatialManager>
     [HideInInspector]
     public float boxSize;
     [HideInInspector]
+    public int birdNumber;
+    [HideInInspector]
     public List<GameObject> allBirds;
     [HideInInspector]
     public Dictionary<Vector3, HashSet<GameObject>> boxes;
@@ -45,6 +48,28 @@ public class SpatialManager : Singleton<SpatialManager>
             AddBird(newPosition);
         }
     }
+
+    private void Update()
+    {
+        //float a = (float)initalNumber * 0.005f + 0.5f;
+        //area = new Vector3(a, a, a);
+        if (birdNumber != initalNumber)
+        {
+            if(birdNumber > initalNumber)
+            {
+                RemoveBird1(birdNumber - initalNumber);
+            }
+            else
+            {
+                for (int i = 0; i < (initalNumber-birdNumber); i++)
+                {
+                    Vector3 newPosition = SetNewPosition();
+                    AddBird(newPosition);
+                }
+            }
+        }
+    }
+
 
     private Vector3 SetNewPosition()
     {
@@ -65,27 +90,78 @@ public class SpatialManager : Singleton<SpatialManager>
 
         Vector3 boxID = getBoxPosition(position);
 
-        /*if (boxes.ContainsKey(boxID))
-        {
-             boxes[boxID].Add(newBird);
-        }
-        else
-        {
-            boxes[boxID] = new List<GameObject> { newBird };
-        }*/
         if (!boxes.TryGetValue(boxID, out HashSet<GameObject> bucket))
         {
             bucket = new HashSet<GameObject>();
             boxes[boxID] = bucket;
         }
         bucket.Add(newBird);
+        birdNumber++;
         return newBird;
     }
+
+    public void RemoveBird1(int number)
+    {
+        while (number > 0)
+        {
+            GameObject b = allBirds[number];
+            allBirds.RemoveAt(number);
+            Destroy(b);
+            number--;
+            birdNumber--;
+        }
+    }
+
+
+    public void RemoveBird(int number)
+    {
+        Vector3 newPosition = Vector3.zero;
+        Vector3 boxID = Vector3.zero;
+        while(number > 0) 
+        {
+            newPosition = SetNewPosition();
+            boxID = getBoxPosition(newPosition);
+            if (boxes.TryGetValue(boxID, out HashSet<GameObject> bucket))
+            {
+                int d = bucket.Count - number;
+                List<GameObject> removeList = new List<GameObject>();
+                GameObject bird;
+                if (d > 0)
+                {
+                    for (int i = 0; i < number; i++)
+                    {
+                        if (i >= bucket.Count) break; 
+                        bird = bucket.ElementAt(i);
+                        bucket.Remove(bucket.ElementAt(i));
+                        Destroy(bird);
+                        birdNumber --;
+                        number--;
+                    }
+                    
+                }
+                else
+                {
+                    for (int i = 0; i < bucket.Count; i++)
+                    {
+                        bird = bucket.ElementAt(i);
+                        bucket.Remove(bucket.ElementAt(i));
+                        Destroy(bird);
+                        birdNumber--;
+                        number--;
+                    }
+
+                }
+            }
+        }
+
+
+    }
+
 
     //
     //      Get the position of current box (Uniform Spatial Subdivision)
     //
-    public Vector3 getBoxPosition(Vector3 position)
+    static public Vector3 getBoxPosition(Vector3 position)
     {
         Vector3 p = new Vector3(Mathf.Floor(position.x / SpatialManager.Instance.boxSize),
                                     Mathf.Floor(position.y / SpatialManager.Instance.boxSize),

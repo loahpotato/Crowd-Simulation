@@ -25,6 +25,8 @@ public class FlockManager : Singleton<FlockManager>
     public List<GameObject> allBirds;
     [HideInInspector]
     public Vector3 center = Vector3.zero;
+    [HideInInspector]
+    public int birdNumber;
 
     void Start()
     {
@@ -35,6 +37,37 @@ public class FlockManager : Singleton<FlockManager>
             //plane.transform.position = new Vector3(0, - area.y * 2, 0);
 
             AddBird(newPosition);
+        }
+    }
+
+    private void Update()
+    {
+        if (birdNumber != initalNumber)
+        {
+            if (birdNumber > initalNumber)
+            {
+                RemoveBird(birdNumber - initalNumber);
+            }
+            else
+            {
+                for (int i = 0; i < (initalNumber - birdNumber); i++)
+                {
+                    Vector3 newPosition = SetNewPosition();
+                    AddBird(newPosition);
+                }
+            }
+        }
+    }
+
+    public void RemoveBird(int number)
+    {
+        while (number > 0)
+        {
+            GameObject b = allBirds[number];
+            allBirds.RemoveAt(number);
+            Destroy(b);
+            number--;
+            birdNumber--;
         }
     }
 
@@ -54,6 +87,7 @@ public class FlockManager : Singleton<FlockManager>
         GameObject newBird = Instantiate(birdPrefab, position, rotation);
 
         allBirds.Add(newBird);
+        birdNumber++;
         return newBird;
     }
 }

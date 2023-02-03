@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Security.Cryptography;
 using Unity.VisualScripting;
@@ -43,7 +44,7 @@ public class SpatialBehaviour : MonoBehaviour
         var noise = Mathf.PerlinNoise(Time.time, noiseOffset);
         var v = velocity * (1.0f + noise * SpatialManager.Instance.velocityVariation);
 
-        boxID = SpatialManager.Instance.getBoxPosition(currentPosition);
+        boxID = SpatialManager.getBoxPosition(currentPosition);
 
         if (!b.Contains(currentPosition))
         {
@@ -79,7 +80,7 @@ public class SpatialBehaviour : MonoBehaviour
         }
         transform.position = currentPosition + transform.forward * (v * Time.deltaTime);
 
-        Vector3 newBoxID = SpatialManager.Instance.getBoxPosition(transform.position);
+        Vector3 newBoxID = SpatialManager.getBoxPosition(transform.position);
         if (!newBoxID.Equals(boxID))
         {
             SpatialManager.Instance.boxes[boxID].Remove(gameObject);
@@ -106,8 +107,13 @@ public class SpatialBehaviour : MonoBehaviour
 
         HashSet<GameObject> boxBirds = findNearby(boxID);
         Color c = new Color();
+        if(boxBirds.Count > 10)
+        {
+
+        }
         foreach (GameObject bird in boxBirds)
         {
+            if (bird.IsDestroyed() || bird == null) continue;
             if (groupSize > SpatialManager.Instance.maxQueryNumber) break;
             if (bird.gameObject == gameObject) continue;
 
